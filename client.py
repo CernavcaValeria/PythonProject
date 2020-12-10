@@ -8,7 +8,7 @@ client.connect((localHost, PORT))
 listOfScorescOfSiglePlayer = []
 
 def playAgain(myName):
-    continueOrNo = input("".join(("[ SERVER ] Do you want to Continue? :")))
+    continueOrNo = input("".join(("[ SERVER ] Do you want to Continue? y/n :")))
     client.sendall(bytes(continueOrNo,'UTF-8'))
     serverRecvValidation =  client.recv(1024)
     print(serverRecvValidation.decode())
@@ -156,6 +156,7 @@ def playWithSomeone(myName):
     client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
     whoWon()
     playAgain(myName)
+
 
 
 
