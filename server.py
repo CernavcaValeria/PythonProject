@@ -76,9 +76,9 @@ def playAgain(Players):
             gameServerTwoClients()
 
         elif wantContinuePl1=='y' and wantContinuePl2=='n':  
-            continueGame = Players[1].sockCl.recv(2048)
+            continueGame = Players[0].sockCl.recv(2048)
             print("[",Players[0].name,"]",continueGame.decode())
-            Players[1].sockCl.send(bytes('y','UTF-8'))
+            Players[0].sockCl.send(bytes('y','UTF-8'))
             isReady = Players[0].sockCl.recv(2048)
             print("[",Players[0].name,"]",isReady.decode())
             gameServerOneClient(Players[0])
