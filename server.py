@@ -65,14 +65,18 @@ def playAgain(Players):
             print ("[",Players[1].name,"] I have to go. Bye ! ")
 
         elif wantContinuePl1=='y' and wantContinuePl2=='y':
-            recv1 = Players[0].sockCl.recv(2048)
-            recv2 = Players[1].sockCl.recv(2048)
+            continueGameP1 = Players[0].sockCl.recv(2048)
+            continueGameP2 = Players[1].sockCl.recv(2048)
+            print("[",Players[0].name,"]",continueGameP1.decode())
+            print("[",Players[1].name,"]",continueGameP2.decode())
             sessionTwoPlayers.append(Players[0])
             sessionTwoPlayers.append(Players[1])
             Players[0].sockCl.send(bytes('n','UTF-8'))
             Players[1].sockCl.send(bytes('n','UTF-8'))
-            recv1 = Players[0].sockCl.recv(2048)
-            recv2 = Players[1].sockCl.recv(2048)
+            readyPl1 = Players[0].sockCl.recv(2048)
+            readyPl2 = Players[1].sockCl.recv(2048)
+            print("[",Players[0].name,"]",readyPl1.decode())
+            print("[",Players[1].name,"]",readyPl1.decode())
             gameServerTwoClients()
 
         elif wantContinuePl1=='y' and wantContinuePl2=='n':  
@@ -100,8 +104,8 @@ def playAgain(Players):
             print ("[",Players[0].name,"] I have to go. Bye ! ")
             
         elif wantContinue=='y':
-            cliMsg = Players[0].sockCl.recv(2048)
-            print ("[",Players[0].name,"]",cliMsg.decode())
+            clientMsg = Players[0].sockCl.recv(2048)
+            print ("[",Players[0].name,"]",clientMsg.decode())
             Players[0].sockCl.send(bytes('y','UTF-8'))
             isClReady = Players[0].sockCl.recv(2048)
             print ("[",Players[0].name,"]",isClReady.decode())
