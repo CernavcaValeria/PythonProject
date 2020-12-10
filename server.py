@@ -13,7 +13,7 @@ print("[ SERVER ] Waiting for client's requests ...")
 
 def gameServerOneClient(clientIdentity):
 
-    number = random.randint(1,50)
+    number = random.randint(0,50)
     print("[ SERVER ]", clientIdentity.name,"has to guess the number",number)
     clientIdentity.sockCl.send(bytes("[ SERVER ] Guess the number : __",'UTF-8'))
     plGuess = clientIdentity.sockCl.recv(2048)
