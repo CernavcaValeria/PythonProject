@@ -7,9 +7,39 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((localHost, PORT))
 listOfScorescOfSiglePlayer = []
 
+
+def validateNumberInRange():
+    while True:
+        number = int(input("".join(("[ ", myName.upper() ," ] "))))
+        if number in range(0,51):
+            break
+        print("-----------The number is out of range (0,50). Try Again!") 
+    return str(number)
+
+
+def validatePrefernace():
+    while True:  
+        response = input("".join(("Preference:")))
+        if response=='y' or response=='n':
+            break
+        print("-----------Wrong input. Try Again!")         
+    return response
+
+
+def validateResponse():
+    while True:
+        response = input("".join(("[ SERVER ] Do you want to Continue? y/n :")))
+        if response=='y' or response=='n':
+            break
+        print("-----------Wrong input. Try Again!")
+    return response
+
+
 def playAgain(myName):
-    continueOrNo = input("".join(("[ SERVER ] Do you want to Continue? y/n :")))
+
+    continueOrNo = validateResponse()
     client.sendall(bytes(continueOrNo,'UTF-8'))
+
     serverRecvValidation =  client.recv(1024)
     print(serverRecvValidation.decode())
     
@@ -37,7 +67,7 @@ def playAgain(myName):
 def playWithServer(myName):
     serverMsg =  client.recv(1024)
     print(serverMsg.decode())
-    number = input("".join(("[ ", myName.upper() ," ] ")))
+    number = validateNumberInRange()
     client.sendall(bytes(number,'UTF-8'))
 
     attempts = 0
@@ -54,7 +84,7 @@ def playWithServer(myName):
         elif msg[0]+msg[1]=='ok':
             print("[ SERVER ] Congrats !You guessed the number !")
             break
-        iThink = input("".join(("[ ", myName.upper() ," ] ")))
+        iThink =  validateNumberInRange()
         client.sendall(bytes(iThink,'UTF-8'))
 
     print("[ SERVER ] The results are in the process of being displayed ...\n")
@@ -86,7 +116,7 @@ def playWithSomeone(myName):
     client.sendall(bytes("[ PLAYERS] We're ready for Part 1!",'UTF-8'))
 
 
-    #start (part1)
+    #start(part1)
     playerStatus1 =  client.recv(1024)#recv status: giver / guesser
     status1 = playerStatus1.decode()
     print(status1)
@@ -95,7 +125,7 @@ def playWithSomeone(myName):
     for i in range(11,15):
         statusPlayer = statusPlayer + status1[i]
  
-    number = input("".join(("[ ", myName.upper() ," ] ")))
+    number =  validateNumberInRange()
     client.sendall(bytes(number,'UTF-8'))
 
     attempts = 0
@@ -110,7 +140,7 @@ def playWithSomeone(myName):
             elif msg=='ok':
                 print("[ SERVER ] Congrats !You guessed the number in",attempts,"attempts")
                 break
-            iThink = input("".join(("[ ", myName.upper() ," ] ")))
+            iThink =  validateNumberInRange()
             client.sendall(bytes(iThink,'UTF-8'))
 
     elif statusPlayer=='Give':
@@ -130,7 +160,7 @@ def playWithSomeone(myName):
     for j in range(11,15):
         status1Player = status1Player + status2[j]
  
-    number1 = input("".join(("[ ", myName.upper() ," ] ")))
+    number1 =  validateNumberInRange()
     client.sendall(bytes(number1,'UTF-8'))
 
     attempts1 = 0
@@ -144,7 +174,7 @@ def playWithSomeone(myName):
             else:
                 print("[ SERVER ] Congrats !You guessed the number in",attempts1,"attempts")
                 break
-            iThink1 = input("".join(("[ ", myName.upper() ," ] ")))
+            iThink1 =  validateNumberInRange()
             client.sendall(bytes(iThink1,'UTF-8'))
 
     elif status1Player=='Give':
@@ -167,7 +197,7 @@ client.sendall(bytes(myName,'UTF-8'))
 
 serverQuestion1 =  client.recv(1024)#play with server or friend?
 print(serverQuestion1.decode())
-responsePreference = input("".join(("Preference:")))
+responsePreference = validatePrefernace()
 client.sendall(bytes(responsePreference,'UTF-8'))
     
 
