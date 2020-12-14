@@ -209,8 +209,6 @@ def gameServerTwoClients():
 
             sessionTwoPlayers[1].score.append(player2Attepmts)
 
-
-
             # player2 give the number | player1 guess the number
             ready1P1 = sessionTwoPlayers[0].sockCl.recv(2048)
             ready1P2 = sessionTwoPlayers[1].sockCl.recv(2048)
@@ -270,7 +268,6 @@ def gameServerTwoClients():
                 declareWinner(newList,player1Attepmts,player2Attepmts)
 
 
-
 class ClientIdentity:
     def __init__(self,sockCl,nameCl,preferenceCl):
         self.sockCl = sockCl
@@ -312,7 +309,6 @@ class Thread(threading.Thread):
             sessionTwoPlayers.append(clientIdentity)
             gameServerTwoClients()
                  
-
 
 while True:  
     server.listen(1)
