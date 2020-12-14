@@ -1,19 +1,30 @@
 import socket
 import time
+import sys
 
 localHost = "127.0.0.1"
 PORT = 1887
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((localHost, PORT))
 listOfScorescOfSiglePlayer = []
-
+part1ClientExit = False
+part2ClientExit = False
 
 def validateNumberInRange():
+    isOk = False
     while True:
-        number = int(input("".join(("[ ", myName.upper() ," ] "))))
-        if number in range(0,51):
+        number = input("".join(("[ ", myName.upper() ," ] ")))
+        if number.isdigit()==True:
+            if  int(number) in range(0,51):
+                isOk = True
+            else:
+                print("-----------The number is out of range (0,50). Try Again!") 
+        elif number=='exit':
+            isOk = True
+        else:
+            print("-----------Enter a number. Try Again!")
+        if isOk==True:
             break
-        print("-----------The number is out of range (0,50). Try Again!") 
     return str(number)
 
 
@@ -68,6 +79,10 @@ def playWithServer(myName):
     serverMsg =  client.recv(1024)
     print(serverMsg.decode())
     number = validateNumberInRange()
+    if number=='exit':
+        client.close
+        print("[ SERVER ] Bye!") 
+        exit()
     client.sendall(bytes(number,'UTF-8'))
 
     attempts = 0
@@ -84,8 +99,13 @@ def playWithServer(myName):
         elif msg[0]+msg[1]=='ok':
             print("[ SERVER ] Congrats !You guessed the number !")
             break
-        iThink =  validateNumberInRange()
+        iThink = validateNumberInRange()
+        if iThink=='exit':
+            client.close
+            print("[ SERVER ] Bye!") 
+            exit()
         client.sendall(bytes(iThink,'UTF-8'))
+             
 
     print("[ SERVER ] The results are in the process of being displayed ...\n")
     time.sleep(2)
@@ -117,6 +137,7 @@ def playWithSomeone(myName):
 
 
     #start(part1)
+    global part1ClientExit
     playerStatus1 =  client.recv(1024)#recv status: giver / guesser
     status1 = playerStatus1.decode()
     print(status1)
@@ -126,6 +147,10 @@ def playWithSomeone(myName):
         statusPlayer = statusPlayer + status1[i]
  
     number =  validateNumberInRange()
+    if number=='exit':
+            client.close
+            print("[ SERVER ] Bye!") 
+            exit()
     client.sendall(bytes(number,'UTF-8'))
 
     attempts = 0
@@ -141,52 +166,79 @@ def playWithSomeone(myName):
                 print("[ SERVER ] Congrats !You guessed the number in",attempts,"attempts")
                 break
             iThink =  validateNumberInRange()
+            if iThink=='exit':
+                part1ClientExit = True
+                client.close
+                print("[ SERVER ] Bye!") 
+                exit()
             client.sendall(bytes(iThink,'UTF-8'))
 
     elif statusPlayer=='Give':
         print("[ SERVER ] The opponent tries to guess ...")
         opponentGuessed =  client.recv(1024)
         opponentAttempts = opponentGuessed.decode()
-        print("[ SERVER ] The opponent guessed the number in ",opponentAttempts,"attempts")
+        if opponentAttempts=='exit':
+            print("[ SERVER ] The opponent quit the game. You'll play with me!")
+            playWithServer(myName)
+        else:
+            print("[ SERVER ] The opponent guessed the number in ",opponentAttempts,"attempts")
 
+    if part1ClientExit == False:
 
-    #start(part2)
-    client.sendall(bytes("[ PLAYERS] We're ready for Part 2 !",'UTF-8'))
-    playerStatus2 =  client.recv(1024)#recv status1: giver / guesser
-    status2 = playerStatus2.decode()
-    print(status2)
+        #start(part2)
+        global part2ClientExit
+        client.sendall(bytes("[ PLAYERS] We're ready for Part 2 !",'UTF-8'))
+        playerStatus2 =  client.recv(1024)#recv status1: giver / guesser
+        status2 = playerStatus2.decode()
+        print(status2)
 
-    status1Player = ''
-    for j in range(11,15):
-        status1Player = status1Player + status2[j]
- 
-    number1 =  validateNumberInRange()
-    client.sendall(bytes(number1,'UTF-8'))
-
-    attempts1 = 0
-    if status1Player=='Gues':
-        while True:
-            attempts1 = attempts1 + 1
-            msg_1 =  client.recv(1024)
-            msg1 = msg_1.decode()
-            if msg1!='ok':
-                print(msg1)
-            else:
-                print("[ SERVER ] Congrats !You guessed the number in",attempts1,"attempts")
-                break
-            iThink1 =  validateNumberInRange()
-            client.sendall(bytes(iThink1,'UTF-8'))
-
-    elif status1Player=='Give':
-        print("[ SERVER ] The opponent tries to guess ...")
-        opponentGuessed1 =  client.recv(1024)
-        opponentAttempts1 = opponentGuessed1.decode()
-        print("[ SERVER ] The opponent guessed the number in ",opponentAttempts1,"attempts")
+        status1Player = ''
+        for j in range(11,15):
+            status1Player = status1Player + status2[j]
     
-    client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
-    whoWon()
-    playAgain(myName)
+        number1 =  validateNumberInRange()
+        if number1=='exit':
+                client.close
+                print("[ SERVER ] Bye!") 
+                exit()
+        client.sendall(bytes(number1,'UTF-8'))
 
+        attempts1 = 0
+        if status1Player=='Gues':
+            while True:
+                attempts1 = attempts1 + 1
+                msg_1 =  client.recv(1024)
+                msg1 = msg_1.decode()
+                if msg1!='ok':
+                    print(msg1)
+                else:
+                    print("[ SERVER ] Congrats !You guessed the number in",attempts1,"attempts")
+                    break
+                iThink1 =  validateNumberInRange()
+                if iThink1=='exit':
+                    part2ClientExit = True
+                    client.close
+                    print("[ SERVER ] Bye!") 
+                    exit()
+                client.sendall(bytes(iThink1,'UTF-8'))
+
+        elif status1Player=='Give':
+            print("[ SERVER ] The opponent tries to guess ...")
+            opponentGuessed1 =  client.recv(1024)
+            opponentAttempts1 = opponentGuessed1.decode()
+            if opponentAttempts1=='exit':
+                print("[ SERVER ] The opponent quit the game. You'll play with me!")
+                playWithServer(myName)
+            else:
+                print("[ SERVER ] The opponent guessed the number in ",opponentAttempts1,"attempts")
+                client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
+                whoWon()
+                playAgain(myName)   
+
+        if part2ClientExit == False:
+            client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
+            whoWon()
+            playAgain(myName)
 
 
 
