@@ -1,6 +1,7 @@
 import socket
 import threading
 import random
+import sys
 
 LOCALHOST = "127.0.0.1"
 PORT = 1887
@@ -20,6 +21,7 @@ def gameServerOneClient(clientIdentity):
     playerGuess = int(plGuess.decode())
     print("[",clientIdentity.name,"] I guess : " ,playerGuess)
 
+    clientQuit = False
     attempts = 0
     while True:
         attempts = attempts + 1
@@ -38,15 +40,21 @@ def gameServerOneClient(clientIdentity):
             break
 
         playerThink = clientIdentity.sockCl.recv(2048)
-        num = int(playerThink.decode())
-        print("[",clientIdentity.name,"] I guess : " ,num)
-        playerGuess = num
+        num = playerThink.decode()
+        if num.isdigit():
+            print("[",clientIdentity.name,"] I guess : " ,int(num))
+            playerGuess = int(num)
+        else:
+            clientQuit = True
+            print("[",clientIdentity.name,"] I have to go. Bye!\n")
+            break
 
-    clientIdentity.score.append(attempts)
-    playerByeMsg = clientIdentity.sockCl.recv(2048)
-    onePlayer = []
-    onePlayer.append(clientIdentity)
-    playAgain(onePlayer)
+    if clientQuit == False:
+        clientIdentity.score.append(attempts)
+        playerByeMsg = clientIdentity.sockCl.recv(2048)
+        onePlayer = []
+        onePlayer.append(clientIdentity)
+        playAgain(onePlayer)
 
 
 def playAgain(Players):
@@ -165,83 +173,101 @@ def gameServerTwoClients():
 
         sessionTwoPlayers[1].sockCl.send(bytes("[ SERVER ] Guess the number : __",'UTF-8'))
         Player2Guess = sessionTwoPlayers[1].sockCl.recv(2048)
-        numberP2HaveToGuess = int(Player2Guess.decode())
-        print("[",sessionTwoPlayers[1].name,"] I guess : " ,numberP2HaveToGuess )
+        player2ThinkTheNumber = int(Player2Guess.decode())
+        print("[",sessionTwoPlayers[1].name,"] I guess : " ,player2ThinkTheNumber )
 
+        clientQuit = False
         player2Attepmts = 0
         while True:
             player2Attepmts = player2Attepmts + 1
-            if numberP2HaveToGuess<numberForPL2:
+            if player2ThinkTheNumber<numberForPL2:
                 sessionTwoPlayers[1].sockCl.send(bytes("[ SERVER ] Wrong! The number is bigger. Try Again",'UTF-8'))
             
-            if numberP2HaveToGuess>numberForPL2:
+            if player2ThinkTheNumber>numberForPL2:
                 sessionTwoPlayers[1].sockCl.send(bytes("[ SERVER ] Wrong! The number is smaller. Try Again",'UTF-8'))
             
-            if numberP2HaveToGuess==numberForPL2:
+            if player2ThinkTheNumber==numberForPL2:
                 sessionTwoPlayers[1].sockCl.send(bytes("ok",'UTF-8'))
                 sessionTwoPlayers[0].sockCl.send(bytes(str(player2Attepmts),'UTF-8'))                
                 print("[ SERVER ] PLayer",sessionTwoPlayers[1].name,"guessd the number in",str(player2Attepmts),"attempts")
                 break
 
             player2think = sessionTwoPlayers[1].sockCl.recv(2048)
-            num = int(player2think.decode())
-            print("[",sessionTwoPlayers[1].name,"] I guess : ",num)
-            numberP2HaveToGuess = num
-
-        sessionTwoPlayers[1].score.append(player2Attepmts)
-
-
-
-        # player2 give the number | player1 guess the number
-        ready1P1 = sessionTwoPlayers[0].sockCl.recv(2048)
-        ready1P2 = sessionTwoPlayers[1].sockCl.recv(2048)
-        print(ready1P1.decode())
-
-        sessionTwoPlayers[1].sockCl.send(bytes("[ SERVER ] Give me an number between [0,50] : __",'UTF-8'))
-        numberForPlayer1 = sessionTwoPlayers[1].sockCl.recv(2048)
-        numberForPL1 = int(numberForPlayer1.decode())
-        print("[",sessionTwoPlayers[1].name,"] I give the number : ",numberForPL1 )
-
-        sessionTwoPlayers[0].sockCl.send(bytes("[ SERVER ] Guess the number : __",'UTF-8'))
-        Player1Guess = sessionTwoPlayers[0].sockCl.recv(2048)
-        numberP1HaveToGuess = int(Player1Guess.decode())
-        print("[",sessionTwoPlayers[0].name,"] I guess : ",numberP1HaveToGuess )
-        
-
-        player1Attepmts = 0
-        while True:
-            player1Attepmts = player1Attepmts + 1
-            if numberP1HaveToGuess<numberForPL1:
-                sessionTwoPlayers[0].sockCl.send(bytes("[ SERVER ] Wrong! The number is bigger. Try Again",'UTF-8'))
-            
-            if numberP1HaveToGuess>numberForPL1:
-                sessionTwoPlayers[0].sockCl.send(bytes("[ SERVER ] Wrong! The number is smaller. Try Again",'UTF-8'))
- 
-            if numberP1HaveToGuess==numberForPL1:
-                sessionTwoPlayers[1].sockCl.send(bytes(str(player1Attepmts),'UTF-8'))                
-                sessionTwoPlayers[0].sockCl.send(bytes("ok",'UTF-8'))
-                print("[ SERVER ] PLayer",sessionTwoPlayers[0].name,"guessed the number in",str(player1Attepmts),"attempts")
+            num = player2think.decode()
+            if num.isdigit():
+                print("[",sessionTwoPlayers[1].name,"] I guess : " ,int(num))
+                player2ThinkTheNumber = int(num)
+            else:
+                print("[",sessionTwoPlayers[1].name,"] I have to go. Bye!\n")
+                clientQuit = True
                 break
 
-            player1think = sessionTwoPlayers[0].sockCl.recv(2048)
-            num1 = int(player1think.decode())
-            print("[",sessionTwoPlayers[0].name,"] I guess : " ,num1)
-            numberP1HaveToGuess = num1 
+        if clientQuit==True:
+            sessionTwoPlayers[0].sockCl.send(bytes('exit','UTF-8')) 
+            gameServerOneClient(sessionTwoPlayers[0])
+        else:
 
-        sessionTwoPlayers[0].score.append(player1Attepmts)
+            sessionTwoPlayers[1].score.append(player2Attepmts)
 
 
-        #Players waiting for results
-        waitingPl1 = sessionTwoPlayers[0].sockCl.recv(2048)
-        waitingPl2 = sessionTwoPlayers[1].sockCl.recv(2048)
-        print(waitingPl1.decode())
 
-        newList = []
-        newList.append(sessionTwoPlayers[0])
-        newList.append(sessionTwoPlayers[1])
-        sessionTwoPlayers.pop(0)
-        sessionTwoPlayers.pop(0)
-        declareWinner(newList,player1Attepmts,player2Attepmts)
+            # player2 give the number | player1 guess the number
+            ready1P1 = sessionTwoPlayers[0].sockCl.recv(2048)
+            ready1P2 = sessionTwoPlayers[1].sockCl.recv(2048)
+            print(ready1P1.decode())
+
+            sessionTwoPlayers[1].sockCl.send(bytes("[ SERVER ] Give me an number between [0,50] : __",'UTF-8'))
+            numberForPlayer1 = sessionTwoPlayers[1].sockCl.recv(2048)
+            numberForPL1 = int(numberForPlayer1.decode())
+            print("[",sessionTwoPlayers[1].name,"] I give the number : ",numberForPL1 )
+
+            sessionTwoPlayers[0].sockCl.send(bytes("[ SERVER ] Guess the number : __",'UTF-8'))
+            Player1Guess = sessionTwoPlayers[0].sockCl.recv(2048)
+            player1ThinkTheNumber = int(Player1Guess.decode())
+            print("[",sessionTwoPlayers[0].name,"] I guess : ",player1ThinkTheNumber )
+            
+            player1Attepmts = 0
+            while True:
+                player1Attepmts = player1Attepmts + 1
+                if player1ThinkTheNumber<numberForPL1:
+                    sessionTwoPlayers[0].sockCl.send(bytes("[ SERVER ] Wrong! The number is bigger. Try Again",'UTF-8'))
+                
+                if player1ThinkTheNumber>numberForPL1:
+                    sessionTwoPlayers[0].sockCl.send(bytes("[ SERVER ] Wrong! The number is smaller. Try Again",'UTF-8'))
+    
+                if player1ThinkTheNumber==numberForPL1:
+                    sessionTwoPlayers[1].sockCl.send(bytes(str(player1Attepmts),'UTF-8'))                
+                    sessionTwoPlayers[0].sockCl.send(bytes("ok",'UTF-8'))
+                    print("[ SERVER ] PLayer",sessionTwoPlayers[0].name,"guessed the number in",str(player1Attepmts),"attempts")
+                    break
+
+                player1think = sessionTwoPlayers[0].sockCl.recv(2048)
+                num1 = player1think.decode()
+                if num1.isdigit():
+                    print("[",sessionTwoPlayers[0].name,"] I guess : " ,int(num1))
+                    player1ThinkTheNumber = int(num1)
+                else:
+                    print("[",sessionTwoPlayers[0].name,"] I have to go. Bye!\n")
+                    clientQuit = True
+                    break
+
+            if clientQuit==True:
+                sessionTwoPlayers[1].sockCl.send(bytes('exit','UTF-8')) 
+                gameServerOneClient(sessionTwoPlayers[1])
+            else:
+                sessionTwoPlayers[0].score.append(player1Attepmts)
+
+                #Players waiting for results
+                waitingPl1 = sessionTwoPlayers[0].sockCl.recv(2048)
+                waitingPl2 = sessionTwoPlayers[1].sockCl.recv(2048)
+                print(waitingPl1.decode())
+
+                newList = []
+                newList.append(sessionTwoPlayers[0])
+                newList.append(sessionTwoPlayers[1])
+                sessionTwoPlayers.pop(0)
+                sessionTwoPlayers.pop(0)
+                declareWinner(newList,player1Attepmts,player2Attepmts)
 
 
 
@@ -276,7 +302,7 @@ class Thread(threading.Thread):
             print ("[",clientNichName,"] I want to play with a friend! ")
             clientIdentity.preference = 'multiPlayer'
         elif recvPrefere=='n':
-            print ("[",clientNichName,"] I want to play with server! ")
+            print ("[",clientNichName.upper(),"] I want to play with server! ")
             clientIdentity.preference = 'onePlayer'
 
 
@@ -285,7 +311,7 @@ class Thread(threading.Thread):
         elif clientIdentity.preference == 'multiPlayer':
             sessionTwoPlayers.append(clientIdentity)
             gameServerTwoClients()
-            
+                 
 
 
 while True:  
