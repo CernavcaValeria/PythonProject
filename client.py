@@ -74,7 +74,6 @@ def playAgain(myName):
             playWithSomeone(myName)
 
 
-
 def playWithServer(myName):
     serverMsg =  client.recv(1024)
     print(serverMsg.decode())
@@ -104,8 +103,7 @@ def playWithServer(myName):
             client.close
             print("[ SERVER ] Bye!") 
             exit()
-        client.sendall(bytes(iThink,'UTF-8'))
-             
+        client.sendall(bytes(iThink,'UTF-8'))         
 
     print("[ SERVER ] The results are in the process of being displayed ...\n")
     time.sleep(2)
