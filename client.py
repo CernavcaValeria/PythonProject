@@ -7,8 +7,6 @@ PORT = 1887
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((localHost, PORT))
 listOfScorescOfSiglePlayer = []
-part1ClientExit = False
-part2ClientExit = False
 
 def validateNumberInRange():
     isOk = False
@@ -74,6 +72,7 @@ def playAgain(myName):
             playWithSomeone(myName)
 
 
+
 def playWithServer(myName):
     serverMsg =  client.recv(1024)
     print(serverMsg.decode())
@@ -99,11 +98,12 @@ def playWithServer(myName):
             print("[ SERVER ] Congrats !You guessed the number !")
             break
         iThink = validateNumberInRange()
+        client.sendall(bytes(iThink,'UTF-8'))
         if iThink=='exit':
             client.close
             print("[ SERVER ] Bye!") 
             exit()
-        client.sendall(bytes(iThink,'UTF-8'))         
+             
 
     print("[ SERVER ] The results are in the process of being displayed ...\n")
     time.sleep(2)
@@ -135,7 +135,7 @@ def playWithSomeone(myName):
 
 
     #start(part1)
-    global part1ClientExit
+    part1ClientExit = False
     playerStatus1 =  client.recv(1024)#recv status: giver / guesser
     status1 = playerStatus1.decode()
     print(status1)
@@ -164,27 +164,29 @@ def playWithSomeone(myName):
                 print("[ SERVER ] Congrats !You guessed the number in",attempts,"attempts")
                 break
             iThink =  validateNumberInRange()
+            client.sendall(bytes(iThink,'UTF-8'))
             if iThink=='exit':
                 part1ClientExit = True
                 client.close
                 print("[ SERVER ] Bye!") 
                 exit()
-            client.sendall(bytes(iThink,'UTF-8'))
 
     elif statusPlayer=='Give':
         print("[ SERVER ] The opponent tries to guess ...")
         opponentGuessed =  client.recv(1024)
         opponentAttempts = opponentGuessed.decode()
-        if opponentAttempts=='exit':
+        if opponentAttempts == 'exit':
+            part1ClientExit = True
             print("[ SERVER ] The opponent quit the game. You'll play with me!")
             playWithServer(myName)
         else:
             print("[ SERVER ] The opponent guessed the number in ",opponentAttempts,"attempts")
 
+    
     if part1ClientExit == False:
 
         #start(part2)
-        global part2ClientExit
+        part2ClientExit = False
         client.sendall(bytes("[ PLAYERS] We're ready for Part 2 !",'UTF-8'))
         playerStatus2 =  client.recv(1024)#recv status1: giver / guesser
         status2 = playerStatus2.decode()
@@ -213,30 +215,32 @@ def playWithSomeone(myName):
                     print("[ SERVER ] Congrats !You guessed the number in",attempts1,"attempts")
                     break
                 iThink1 =  validateNumberInRange()
+                client.sendall(bytes(iThink1,'UTF-8'))
                 if iThink1=='exit':
                     part2ClientExit = True
                     client.close
                     print("[ SERVER ] Bye!") 
                     exit()
-                client.sendall(bytes(iThink1,'UTF-8'))
+
+            client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
+            whoWon()
+            playAgain(myName)
 
         elif status1Player=='Give':
             print("[ SERVER ] The opponent tries to guess ...")
             opponentGuessed1 =  client.recv(1024)
             opponentAttempts1 = opponentGuessed1.decode()
             if opponentAttempts1=='exit':
+                part2ClientExit = True   
                 print("[ SERVER ] The opponent quit the game. You'll play with me!")
                 playWithServer(myName)
             else:
                 print("[ SERVER ] The opponent guessed the number in ",opponentAttempts1,"attempts")
                 client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
                 whoWon()
-                playAgain(myName)   
+                playAgain(myName)  
 
-        if part2ClientExit == False:
-            client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
-            whoWon()
-            playAgain(myName)
+            
 
 
 
