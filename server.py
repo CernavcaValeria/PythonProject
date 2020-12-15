@@ -203,11 +203,15 @@ def gameServerTwoClients():
                 break
 
         if clientQuit==True:
-            sessionTwoPlayers[0].sockCl.send(bytes('exit','UTF-8')) 
-            gameServerOneClient(sessionTwoPlayers[0])
+            sessionTwoPlayers[0].sockCl.send(bytes('exit','UTF-8'))
+            singleClient = sessionTwoPlayers[0] 
+            sessionTwoPlayers.pop(0)
+            sessionTwoPlayers.pop(0)
+            gameServerOneClient(singleClient)
         else:
 
             sessionTwoPlayers[1].score.append(player2Attepmts)
+
 
             # player2 give the number | player1 guess the number
             ready1P1 = sessionTwoPlayers[0].sockCl.recv(2048)
@@ -250,8 +254,11 @@ def gameServerTwoClients():
                     break
 
             if clientQuit==True:
-                sessionTwoPlayers[1].sockCl.send(bytes('exit','UTF-8')) 
-                gameServerOneClient(sessionTwoPlayers[1])
+                sessionTwoPlayers[1].sockCl.send(bytes('exit','UTF-8'))
+                singleClient = sessionTwoPlayers[1] 
+                sessionTwoPlayers.pop(0)
+                sessionTwoPlayers.pop(0)
+                gameServerOneClient(singleClient)
             else:
                 sessionTwoPlayers[0].score.append(player1Attepmts)
 
@@ -266,6 +273,7 @@ def gameServerTwoClients():
                 sessionTwoPlayers.pop(0)
                 sessionTwoPlayers.pop(0)
                 declareWinner(newList,player1Attepmts,player2Attepmts)
+
 
 
 class ClientIdentity:
@@ -309,6 +317,7 @@ class Thread(threading.Thread):
             sessionTwoPlayers.append(clientIdentity)
             gameServerTwoClients()
                  
+
 
 while True:  
     server.listen(1)
