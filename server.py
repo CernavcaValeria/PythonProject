@@ -12,6 +12,13 @@ print("[ SERVER ] Let's go")
 print("[ SERVER ] Waiting for client's requests ...")
 
 
+class ClientIdentity:
+    def __init__(self,sockCl,nameCl,preferenceCl):
+        self.sockCl = sockCl
+        self.name = nameCl.upper()
+        self.preference = preferenceCl
+        self.score = []
+
 class Thread(threading.Thread):
     def __init__(self,clientAdr,sockCl):
         threading.Thread.__init__(self)
