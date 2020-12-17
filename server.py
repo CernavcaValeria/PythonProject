@@ -54,6 +54,9 @@ def gameServerOneClient(clientIdentity):
     if clientQuit == False:
         clientIdentity.score.append(attempts)
         playerByeMsg = clientIdentity.sockCl.recv(2048)
+        onePlayer = []
+        onePlayer.append(clientIdentity)
+        playAgain(onePlayer)
 
 
 def declareWinner(Players,p1Attmps,p2Attmps):
@@ -79,7 +82,70 @@ def declareWinner(Players,p1Attmps,p2Attmps):
         Players[0].sockCl.send(bytes(msg1,'UTF-8'))
         Players[1].sockCl.send(bytes(msg2,'UTF-8'))
     print("[ SERVER ] The results were transmitted successfully !")
+    playAgain(Players)
 
+
+def playAgain(Players):
+    
+    if len(Players)==2:
+        recvIfWantContinuePl1 = Players[0].sockCl.recv(2048)
+        recvIfWantContinuePl2 = Players[1].sockCl.recv(2048)
+        wantContinuePl1 = recvIfWantContinuePl1.decode()
+        wantContinuePl2 = recvIfWantContinuePl2.decode()
+
+        Players[0].sockCl.send(bytes('[ SERVER ] I have successfully received your wish to continue or not!','UTF-8'))
+        Players[1].sockCl.send(bytes('[ SERVER ] I have successfully received your wish to continue or not!','UTF-8'))
+
+        if wantContinuePl1=='n' and wantContinuePl2=='n':    
+            print ("[",Players[0].name,"] I have to go. Bye ! ")
+            print ("[",Players[1].name,"] I have to go. Bye ! ")
+
+        elif wantContinuePl1=='y' and wantContinuePl2=='y':
+            continueGameP1 = Players[0].sockCl.recv(2048)
+            continueGameP2 = Players[1].sockCl.recv(2048)
+            print("[",Players[0].name,"]",continueGameP1.decode())
+            print("[",Players[1].name,"]",continueGameP2.decode())
+            sessionTwoPlayers.append(Players[0])
+            sessionTwoPlayers.append(Players[1])
+            Players[0].sockCl.send(bytes('n','UTF-8'))
+            Players[1].sockCl.send(bytes('n','UTF-8'))
+            readyPl1 = Players[0].sockCl.recv(2048)
+            readyPl2 = Players[1].sockCl.recv(2048)
+            print("[",Players[0].name,"]",readyPl1.decode())
+            print("[",Players[1].name,"]",readyPl1.decode())
+            gameServerTwoClients()
+
+        elif wantContinuePl1=='y' and wantContinuePl2=='n':  
+            continueGame = Players[0].sockCl.recv(2048)
+            print("[",Players[0].name,"]",continueGame.decode())
+            Players[0].sockCl.send(bytes('y','UTF-8'))
+            isReady = Players[0].sockCl.recv(2048)
+            print("[",Players[0].name,"]",isReady.decode())
+            gameServerOneClient(Players[0])
+
+        elif wantContinuePl1=='n' and wantContinuePl2=='y':
+            continueGame = Players[1].sockCl.recv(2048)
+            print("[",Players[1].name,"]",continueGame.decode())
+            Players[1].sockCl.send(bytes('y','UTF-8'))
+            isReady = Players[1].sockCl.recv(2048)
+            print("[",Players[1].name,"]",isReady.decode())
+            gameServerOneClient(Players[1])
+    
+    elif len(Players)==1:
+        recvIfWantContinue = Players[0].sockCl.recv(2048)
+        wantContinue = recvIfWantContinue.decode()
+        Players[0].sockCl.send(bytes('[ SERVER ] I have successfully received your wish to continue or not!','UTF-8'))
+
+        if wantContinue=='n':    
+            print ("[",Players[0].name,"] I have to go. Bye ! ")
+            
+        elif wantContinue=='y':
+            clientMsg = Players[0].sockCl.recv(2048)
+            print ("[",Players[0].name,"]",clientMsg.decode())
+            Players[0].sockCl.send(bytes('y','UTF-8'))
+            isClReady = Players[0].sockCl.recv(2048)
+            print ("[",Players[0].name,"]",isClReady.decode())
+            gameServerOneClient(Players[0])
 
 
 sessionTwoPlayers = []
