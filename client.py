@@ -7,6 +7,35 @@ localHost = "127.0.0.1"
 PORT = 1887
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((localHost, PORT))
+listOfScorescOfSiglePlayer = []
+
+
+def playAgain(myName):
+
+    continueOrNo = validation.validateResponse()
+    client.sendall(bytes(continueOrNo,'UTF-8'))
+
+    serverRecvValidation =  client.recv(1024)
+    print(serverRecvValidation.decode())
+    
+    if continueOrNo=='n':
+        print("[ SERVER ] Bye!")
+        client.close()
+        
+    elif continueOrNo=='y' :
+        client.sendall(bytes("I want to continue",'UTF-8'))
+    
+        serverMsge =  client.recv(1024)
+        playSingle = serverMsge.decode()
+        if playSingle=='y':
+            time.sleep(1)
+            client.sendall(bytes("I'm ready to play with the server",'UTF-8'))
+            playWithServer(myName)
+
+        elif playSingle=='n':
+            time.sleep(1)
+            client.sendall(bytes("I'm ready to play with an opponent",'UTF-8'))
+            playWithSomeone(myName)
 
 
 def playWithServer(myName):
@@ -45,6 +74,7 @@ def playWithServer(myName):
     time.sleep(2)
     print("[ SERVER ] Your score is",(50-2*(attempts-1)),"points (",attempts,"attempts )\n[ SERVER ] Your best result:",myBestScore,"attempts")
     client.sendall(bytes("Thank you ! Bye",'UTF-8'))
+    playAgain(myName)
 
 
 def whoWon():
@@ -171,6 +201,7 @@ def playWithSomeone(myName):
                 print("[ SERVER ] The opponent guessed the number in ",opponentAttempts1,"attempts")
                 client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
                 whoWon()
+                playAgain(myName)
 
 
 serverQuestion =  client.recv(1024)#have name?
