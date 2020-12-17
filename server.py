@@ -13,9 +13,8 @@ print("[ SERVER ] Let's go")
 print("[ SERVER ] Waiting for client's requests ...")
 
 
-
 def gameServerOneClient(clientIdentity):
-    
+
     number = random.randint(0,50)
     print("[ SERVER ]", clientIdentity.name,"has to guess the number",number)
     clientIdentity.sockCl.send(bytes("[ SERVER ] Guess the number : __",'UTF-8'))
@@ -59,34 +58,8 @@ def gameServerOneClient(clientIdentity):
         playAgain(onePlayer)
 
 
-def declareWinner(Players,p1Attmps,p2Attmps):
-    
-    player1Score = int(50-(2*(p1Attmps-1)))
-    player2Score = int(50-(2*(p2Attmps-1)))
-    player1BestSc = min(Players[0].score)
-    player2BestSc = min(Players[1].score)
-
-    if player1Score<player2Score:
-        msg1 = "".join(('[ SERVER ] You lose! Score: ',str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
-        msg2 = "".join(('[ SERVER ] You won! Score: ', str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
-        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
-        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
-    elif player1Score>player2Score:
-        msg1 = "".join(('[ SERVER ] You won! Score: ', str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
-        msg2 = "".join(('[ SERVER ] You lose! Score: ',str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
-        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
-        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
-    elif player1Score==player2Score:
-        msg1 = "".join(('[ SERVER ] Equality ! Score : ',str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
-        msg2 = "".join(('[ SERVER ] Equality ! Score : ',str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
-        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
-        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
-    print("[ SERVER ] The results were transmitted successfully !")
-    playAgain(Players)
-
-
 def playAgain(Players):
-    
+
     if len(Players)==2:
         recvIfWantContinuePl1 = Players[0].sockCl.recv(2048)
         recvIfWantContinuePl2 = Players[1].sockCl.recv(2048)
@@ -146,6 +119,34 @@ def playAgain(Players):
             isClReady = Players[0].sockCl.recv(2048)
             print ("[",Players[0].name,"]",isClReady.decode())
             gameServerOneClient(Players[0])
+
+
+
+def declareWinner(Players,p1Attmps,p2Attmps):
+
+    player1Score = int(50-(2*(p1Attmps-1)))
+    player2Score = int(50-(2*(p2Attmps-1)))
+    player1BestSc = min(Players[0].score)
+    player2BestSc = min(Players[1].score)
+
+    if player1Score<player2Score:
+        msg1 = "".join(('[ SERVER ] You lose! Score: ',str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
+        msg2 = "".join(('[ SERVER ] You won! Score: ', str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
+        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
+        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
+    elif player1Score>player2Score:
+        msg1 = "".join(('[ SERVER ] You won! Score: ', str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
+        msg2 = "".join(('[ SERVER ] You lose! Score: ',str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
+        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
+        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
+    elif player1Score==player2Score:
+        msg1 = "".join(('[ SERVER ] Equality ! Score : ',str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
+        msg2 = "".join(('[ SERVER ] Equality ! Score : ',str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
+        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
+        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
+    print("[ SERVER ] The results were transmitted successfully !")
+    playAgain(Players)
+
 
 
 sessionTwoPlayers = []
@@ -300,6 +301,15 @@ class Thread(threading.Thread):
         elif recvPrefere=='n':
             print ("[",clientNichName.upper(),"] I want to play with server! ")
             clientIdentity.preference = 'onePlayer'
+
+
+        if clientIdentity.preference == 'onePlayer':
+            gameServerOneClient(clientIdentity)
+        elif clientIdentity.preference == 'multiPlayer':
+            sessionTwoPlayers.append(clientIdentity)
+            gameServerTwoClients()
+                 
+
 
 while True:  
     server.listen(1)
