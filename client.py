@@ -3,11 +3,13 @@ import time
 import sys
 import validation
 
+
 localHost = "127.0.0.1"
 PORT = 1887
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((localHost, PORT))
 listOfScorescOfSiglePlayer = []
+
 
 
 def playAgain(myName):
@@ -38,10 +40,11 @@ def playAgain(myName):
             playWithSomeone(myName)
 
 
+
 def playWithServer(myName):
     serverMsg =  client.recv(1024)
     print(serverMsg.decode())
-    number = validation.validateNumberInRange(myName)
+    number =validation.validateNumberInRange(myName)
     if number=='exit':
         client.close
         print("[ SERVER ] Bye!") 
@@ -62,7 +65,7 @@ def playWithServer(myName):
         elif msg[0]+msg[1]=='ok':
             print("[ SERVER ] Congrats !You guessed the number !")
             break
-        iThink = validation.validateNumberInRange(myName)
+        iThink =validation.validateNumberInRange(myName)
         client.sendall(bytes(iThink,'UTF-8'))
         if iThink=='exit':
             client.close
@@ -77,12 +80,14 @@ def playWithServer(myName):
     playAgain(myName)
 
 
+
 def whoWon():
     print("[ SERVER ] The results are in the process of being displayed ...\n")
     time.sleep(3)
     who = client.recv(1024)
     winner = who.decode()
     print(winner)
+
 
 
 def playWithSomeone(myName):
@@ -107,7 +112,7 @@ def playWithSomeone(myName):
     for i in range(11,15):
         statusPlayer = statusPlayer + status1[i]
  
-    number =  validation.validateNumberInRange(myName)
+    number = validation.validateNumberInRange(myName)
     if number=='exit':
             client.close
             print("[ SERVER ] Bye!") 
@@ -126,7 +131,7 @@ def playWithSomeone(myName):
             elif msg=='ok':
                 print("[ SERVER ] Congrats !You guessed the number in",attempts,"attempts")
                 break
-            iThink =  validation.validateNumberInRange(myName)
+            iThink = validation.validateNumberInRange(myName)
             client.sendall(bytes(iThink,'UTF-8'))
             if iThink=='exit':
                 part1ClientExit = True
@@ -159,7 +164,7 @@ def playWithSomeone(myName):
         for j in range(11,15):
             status1Player = status1Player + status2[j]
     
-        number1 =  validation.validateNumberInRange(myName)
+        number1 = validation.validateNumberInRange(myName)
         if number1=='exit':
                 client.close
                 print("[ SERVER ] Bye!") 
@@ -177,7 +182,7 @@ def playWithSomeone(myName):
                 else:
                     print("[ SERVER ] Congrats !You guessed the number in",attempts1,"attempts")
                     break
-                iThink1 =  validation.validateNumberInRange(myName)
+                iThink1 = validation.validateNumberInRange(myName)
                 client.sendall(bytes(iThink1,'UTF-8'))
                 if iThink1=='exit':
                     part2ClientExit = True
@@ -201,7 +206,8 @@ def playWithSomeone(myName):
                 print("[ SERVER ] The opponent guessed the number in ",opponentAttempts1,"attempts")
                 client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
                 whoWon()
-                playAgain(myName)
+                playAgain(myName)  
+
 
 
 serverQuestion =  client.recv(1024)#have name?
