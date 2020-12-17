@@ -56,6 +56,30 @@ def gameServerOneClient(clientIdentity):
         playerByeMsg = clientIdentity.sockCl.recv(2048)
 
 
+def declareWinner(Players,p1Attmps,p2Attmps):
+    
+    player1Score = int(50-(2*(p1Attmps-1)))
+    player2Score = int(50-(2*(p2Attmps-1)))
+    player1BestSc = min(Players[0].score)
+    player2BestSc = min(Players[1].score)
+
+    if player1Score<player2Score:
+        msg1 = "".join(('[ SERVER ] You lose! Score: ',str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
+        msg2 = "".join(('[ SERVER ] You won! Score: ', str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
+        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
+        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
+    elif player1Score>player2Score:
+        msg1 = "".join(('[ SERVER ] You won! Score: ', str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
+        msg2 = "".join(('[ SERVER ] You lose! Score: ',str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
+        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
+        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
+    elif player1Score==player2Score:
+        msg1 = "".join(('[ SERVER ] Equality ! Score : ',str(player1Score),' points (',str(p1Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player1BestSc),' attempts'))
+        msg2 = "".join(('[ SERVER ] Equality ! Score : ',str(player2Score),' points (',str(p2Attmps) ,' attempts)\n[ SERVER ] Your best result: ',str(player2BestSc),' attempts'))
+        Players[0].sockCl.send(bytes(msg1,'UTF-8'))
+        Players[1].sockCl.send(bytes(msg2,'UTF-8'))
+    print("[ SERVER ] The results were transmitted successfully !")
+
 
 
 sessionTwoPlayers = []
@@ -177,7 +201,12 @@ def gameServerTwoClients():
                 waitingPl2 = sessionTwoPlayers[1].sockCl.recv(2048)
                 print(waitingPl1.decode())
 
-
+                newList = []
+                newList.append(sessionTwoPlayers[0])
+                newList.append(sessionTwoPlayers[1])
+                sessionTwoPlayers.pop(0)
+                sessionTwoPlayers.pop(0)
+                declareWinner(newList,player1Attepmts,player2Attepmts)
 
 
 class Thread(threading.Thread):
