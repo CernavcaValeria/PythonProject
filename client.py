@@ -47,6 +47,13 @@ def playWithServer(myName):
     client.sendall(bytes("Thank you ! Bye",'UTF-8'))
 
 
+def whoWon():
+    print("[ SERVER ] The results are in the process of being displayed ...\n")
+    time.sleep(3)
+    who = client.recv(1024)
+    winner = who.decode()
+    print(winner)
+
 
 def playWithSomeone(myName):
     isReadySecondPlayer =  client.recv(1024)
@@ -163,6 +170,7 @@ def playWithSomeone(myName):
             else:
                 print("[ SERVER ] The opponent guessed the number in ",opponentAttempts1,"attempts")
                 client.sendall(bytes("[ PLAYERS] Waiting for results ... ",'UTF-8'))
+                whoWon()
 
 
 serverQuestion =  client.recv(1024)#have name?
